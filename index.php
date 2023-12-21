@@ -1,6 +1,8 @@
 <?php  
 //INSERT INTO `notes` (`sno`, `title`, `description`, `tstamp`) VALUES (NULL, 'buy fruits', 'Hey abc,\r\nYou need to go to the market to buy some fruits.', current_timestamp());
 $insert = false;
+$update=false;
+$delete=false;
 // Connect to the Database 
 $servername = "localhost";
 $username = "root";
@@ -14,23 +16,44 @@ $conn = mysqli_connect($servername, $username, $password, $database);
 if (!$conn){
     die("Sorry we failed to connect: ". mysqli_connect_error());
 }
-echo $_POST['snoEdit'];
-echo $_GET['update'];
-exit();
-if($_SERVER['REQUEST_METHOD'] == 'POST' ){
-  $title = $_POST["title"];
-  $description=$_POST["description"];
 
-//sql query to be executed
-$sql="INSERT INTO `notes` (`title`,`description`) VALUES ('$title','$description')";
-$result= mysqli_query($conn, $sql);
-
-if($result){
-    // echo "The record has been inserted successfully!<br/>";
-    $insert = true;
+//exit();
+if(isset($_GET['delete'])){
+  $sno = $_GET['delete'];
+  $delete=true;
+  $sql="DELETE FROM `notes` WHERE `sno`=$sno";
+  $result= mysqli_query($conn,$sql);
 }
-else{
-    echo "The record was not inserted successfully because of this error --->" . mysqli_error($conn);
+if($_SERVER['REQUEST_METHOD'] == 'POST' ){
+  if(isset($_POST['snoEdit'])){
+    //update the record
+    $sno=$_POST["snoEdit"];
+    $title = $_POST["titleEdit"];
+    $description=$_POST["descriptionEdit"];
+
+    //sql query to be executed
+    $sql="UPDATE `notes` SET `title` = '$title' , `description` = '$description' WHERE `notes`.`sno` = $sno;";
+    $result= mysqli_query($conn, $sql);
+
+    if($result){
+      $uodate=true;
+    }
+  }
+  else{
+    $title = $_POST["title"];
+    $description=$_POST["description"];
+
+    //sql query to be executed
+    $sql="INSERT INTO `notes` (`title`,`description`) VALUES ('$title','$description')";
+    $result= mysqli_query($conn, $sql);
+
+    if($result){
+      // echo "The record has been inserted successfully!<br/>";
+      $insert = true;
+    }
+    else{
+        echo "The record was not inserted successfully because of this error --->" . mysqli_error($conn);
+    }
 }
 }
 // else{
@@ -74,11 +97,11 @@ else{
           <input type="hidden" name="snoEdit" id="snoEdit">
           <div class="form-group">
             <label for="title" class="form-label">Note title</label>
-            <input type="text" class="form-control" id="titleEdit" name="title" aria-describedby="emailHelp">
+            <input type="text" class="form-control" id="titleEdit" name="titleEdit" aria-describedby="emailHelp">
           </div>
           <div class="form-group">
             <label for="description" class="form-label">Note Description</label>
-            <textarea class="form-control" id="descriptionEdit" name="description" rows="3"></textarea>
+            <textarea class="form-control" id="descriptionEdit" name="descriptionEdit" rows="3"></textarea>
           </div>
           <br/>
           <button type="submit" class="btn btn-primary">update Note</button>
@@ -125,9 +148,25 @@ else{
     </div>";
     }
   ?>
+  <?php 
+    if($update){
+       echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+      <strong>SUCCESS!</strong> The notes has been updated successfully!
+      <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+    </div>";
+    }
+  ?>
+  <?php 
+    if($delete){
+       echo "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+      <strong>SUCCESS!</strong> The notes has been deleted successfully!
+      <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+    </div>";
+    }
+  ?>
   <div class="container  my-4">
     <h2>Add a note</h2>
-    <form action="/inotes/iNotes/index.php?update=true" method="post">
+    <form action="/inotes/iNotes/index.php?" method="post">
       <div class="form-group">
         <label for="title" class="form-label">Note title</label>
         <input type="text" class="form-control" id="title" name="title" aria-describedby="emailHelp">
@@ -163,7 +202,7 @@ else{
             <th scope='row'>". $sno ."</th>
             <td>".$row['title']."</td>
             <td>".$row['description']."</td>
-            <td><button class='edit btn btn-sm btn-primary' id=".$row['sno'].">Edit</button>  <a href='/del'>Delete</a></td>
+            <td><button class='edit btn btn-sm btn-primary' id=".$row['sno'].">Edit</button>  <button class='delete btn btn-sm btn-primary' id=d".$row['sno'].">Delete</button>
           </tr>";
             //echo $row['sno'] . ".title is " . $row['title'] . " and desc is " . $row['description'];
             //echo "<br/>";
@@ -207,6 +246,23 @@ else{
           console.log(e.target.id);
           $('#editModal').modal('toggle');
           
+        })
+      })
+
+      deletes = document.getElementsByClassName('delete'); 
+      Array.from(deletes).forEach((element)=>{
+        element.addEventListener("click", (e)=>{
+          console.log("edit", );
+          sno=e.target.id.substr(1,);
+          
+          
+          if(confirm("Are you sure you want to delte this note?")){
+            console.log("yes");
+            window.location = `/inotes/iNotes/index.php?delete=${sno}`;
+          }
+          else{
+            console.log("no");
+          }
         })
       })
   </script>   
